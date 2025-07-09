@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background-color: #00008B;
+      color: white;
+      padding: 15px 20px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .container {
+      display: flex;
+      flex: 1;
+    }
+    .webcam {
+      flex: 3;
+      padding: 20px;
+    }
+    .detected-face-card {
+      width: 300px;
+      padding: 15px;
+      background: white;
+      border: 2px solid #00008B;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+    .detected-face-card img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .detected-info {
+      font-size: 1rem;
+    }
+    .status-On\ Time {
+      color: green;
+      font-weight: bold;
+    }
+    .status-Late {
+      color: orange;
+      font-weight: bold;
+    }
+    .status-Punch\ Out {
+      color: #4a90e2;
+      font-weight: bold;
+    }
+    .sidebar {
+      flex: 1;
+      padding: 20px;
+      background-color: #ffffff;
+      border-left: 1px solid #ddd;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+    }
+    .clock-date {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    .header {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+    .latest {
+      padding: 10px;
+      height: 60vh;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #fefefe;
+    }
+    .face-box {
+      width: 80px;
+      height: 80px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      border: 2px solid #00008B;
+    }
+    .face-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .csv-button {
+      margin-top: 20px;
+    }
+    .csv-button button {
+      background-color: #00008B;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .csv-button button:hover {
+      background-color: #00008B;
+    }
+    form input[type="date"] {
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-top: 5px;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <header>Attendance Dashboard
+    <a href="/admin" style="
+    float: right;
+    font-size: 14px;
+    background: #ffffff;
+    color: #4a90e2;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+  ">➕ Add Face</a>
+  </header>
+  <div class="container">
+    <div class="webcam">
+      <div class="detected-face-card">
+        {% if attendance and attendance[0][4] %}
+          <img src="{{ attendance[0][4] }}" alt="Detected Face">
+        {% else %}
+          <div style="width:100%;height:300px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:20px;">No Face</div>
+        {% endif %}
+        <div class="detected-info">
+          <div><strong>Name:</strong> {{ attendance[0][0] if attendance else 'N/A' }}</div>
+          <div><strong>In Time:</strong> {{ attendance[0][2] if attendance else 'N/A' }}</div>
+          <div><strong>Status:</strong> <span class="status-{{ attendance[0][3]|replace(' ', '\ ') if attendance else '' }}">{{ attendance[0][3] if attendance else 'N/A' }}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar">
+      <div class="clock-date">
+        <div id="clock"></div>
+        <form method="get">
+          <input type="date" name="date" value="{{ today }}" onchange="this.form.submit()">
+        </form>
+      </div>
+      <div class="header">Latest Attendance</div>
+      <div class="latest">
+        {% for row in attendance %}
+          <div class="face-box">
+            {% if row[4] %}
+              <img src="{{ row[4] }}" alt="Face">
+            {% else %}
+              <span style="line-height: 80px; text-align: center; display: block; width: 100%;">FACE</span>
+            {% endif %}
+          </div>
+          <div><strong>Name:</strong> {{ row[0] }}</div>
+          <div><strong>In Time:</strong> {{ row[2] }}</div>
+          <div><strong>Status:</strong> <span class="status-{{ row[3]|replace(' ', '\ ') }}">{{ row[3] }}</span></div>
+          <hr>
+        {% endfor %}
+      </div>
+      <div class="csv-button">
+        <a href="/download" download>
+          <button>Download Latest Attendance</button>
+        </a>
+      </div>
+    </div>
+  </div>
+  <script>
+    function updateClock() {
+      document.getElementById('clock').textContent = new Date().toLocaleString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+  </script>
+</body>
+</html>
